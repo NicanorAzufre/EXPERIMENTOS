@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Artnet UI</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+        --bg: #050a13;
+        --deep: #02060d;
+        --aqua: #64f0ff;
+        --aqua-soft: rgba(100, 240, 255, 0.2);
+        --glow: rgba(72, 196, 255, 0.45);
+        --stroke: rgba(100, 240, 255, 0.25);
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        background:
+          radial-gradient(circle at 20% 20%, rgba(55, 152, 255, 0.25), transparent 55%),
+          radial-gradient(circle at 80% 10%, rgba(100, 240, 255, 0.2), transparent 50%),
+          radial-gradient(circle at 30% 80%, rgba(18, 216, 255, 0.2), transparent 60%),
+          linear-gradient(160deg, var(--deep), var(--bg));
+        overflow: hidden;
+      }
+
+      .canvas {
+        width: min(980px, 90vw);
+        height: min(580px, 80vh);
+        display: grid;
+        place-items: center;
+        border-radius: 40px;
+        background: radial-gradient(
+            circle at 20% 20%,
+            rgba(18, 216, 255, 0.08),
+            transparent 50%
+          ),
+          linear-gradient(145deg, rgba(3, 10, 20, 0.85), rgba(4, 6, 14, 0.95));
+        border: 1px solid rgba(100, 240, 255, 0.12);
+        backdrop-filter: blur(24px);
+        box-shadow:
+          0 40px 120px rgba(1, 5, 12, 0.9),
+          inset 0 0 80px rgba(12, 80, 120, 0.2);
+        position: relative;
+        z-index: 1;
+        overflow: hidden;
+      }
+
+      .controls {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(140px, 1fr));
+        gap: 28px;
+        width: min(720px, 85%);
+        position: relative;
+        z-index: 2;
+      }
+
+      .action {
+        position: relative;
+        height: 140px;
+        border-radius: 28px;
+        border: 1px solid rgba(100, 240, 255, 0.1);
+        background: radial-gradient(
+            circle at 20% 20%,
+            rgba(100, 240, 255, 0.25),
+            transparent 55%
+          ),
+          linear-gradient(160deg, rgba(6, 18, 35, 0.85), rgba(3, 8, 18, 0.92));
+        text-align: left;
+        transition:
+          transform 0.25s ease,
+          border 0.25s ease,
+          box-shadow 0.25s ease,
+          background 0.25s ease;
+        cursor: pointer;
+        box-shadow:
+          0 14px 40px rgba(0, 5, 12, 0.75),
+          inset 0 0 30px rgba(64, 225, 255, 0.15);
+        overflow: hidden;
+      }
+
+      .action::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        border: 1px solid var(--stroke);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+
+      .action:hover,
+      .action:focus-visible {
+        transform: translateY(-4px);
+        border-color: rgba(100, 240, 255, 0.55);
+        box-shadow:
+          0 24px 60px rgba(0, 12, 24, 0.85),
+          0 0 40px rgba(72, 196, 255, 0.3);
+        outline: none;
+      }
+
+      .action:hover::after,
+      .action:focus-visible::after {
+        opacity: 1;
+      }
+
+      .action.active {
+        border-color: rgba(100, 240, 255, 0.75);
+        box-shadow:
+          0 30px 70px rgba(0, 16, 32, 0.9),
+          0 0 55px rgba(100, 240, 255, 0.35);
+      }
+
+      .glow {
+        position: absolute;
+        inset: -30% -20% auto -20%;
+        height: 70%;
+        background:
+          radial-gradient(circle, rgba(72, 196, 255, 0.25), transparent 70%),
+          radial-gradient(circle at 70% 40%, rgba(25, 80, 140, 0.35), transparent 65%);
+        filter: blur(90px);
+        z-index: 0;
+      }
+
+      .mist {
+        position: absolute;
+        inset: 0;
+        background-image: radial-gradient(
+            circle at 30% 30%,
+            rgba(255, 255, 255, 0.05),
+            transparent 40%
+          ),
+          radial-gradient(circle at 70% 70%, rgba(100, 240, 255, 0.08), transparent 45%);
+        mix-blend-mode: screen;
+        opacity: 0.6;
+        pointer-events: none;
+      }
+
+      @media (max-width: 900px) {
+        .canvas {
+          padding: 32px;
+        }
+
+        .controls {
+          grid-template-columns: 1fr;
+          max-width: 320px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="canvas" aria-label="Aqua net interface">
+      <section class="controls">
+        <button class="action" data-action="1" aria-label="Botón 1"></button>
+        <button class="action" data-action="2" aria-label="Botón 2"></button>
+        <button class="action" data-action="3" aria-label="Botón 3"></button>
+      </section>
+      <div class="mist" aria-hidden="true"></div>
+    </div>
+
+    <div class="glow" aria-hidden="true"></div>
+    <script>
+      const buttons = document.querySelectorAll(".action");
+
+      buttons.forEach((button) => {
+        button.addEventListener("click", () => {
+          buttons.forEach((item) => item.classList.remove("active"));
+          button.classList.add("active");
+        });
+      });
+    </script>
+  </body>
+</html>
